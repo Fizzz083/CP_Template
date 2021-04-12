@@ -1,0 +1,61 @@
+#include <bits/stdc++.h>
+#define ll long long
+#define pb push_back
+#define mp make_pair
+#define fast ios_base::sync_with_stdio(false); cin.tie(0);cout.tie(0);
+#define filein freopen("input.txt","r",stdin)
+#define fileout freopen("output.txt","w",stdout)
+using namespace std;
+struct edge
+{
+    ll u,v,w;
+    bool operator<(const edge &p) const{ return w<p.w;}
+};
+ll n,m;
+vector<edge> v;
+ll par[1000000];
+ll findp(ll x)
+{
+    if(par[x]==x) return x;
+    return par[x]=findp(par[x]);
+}
+void mst()
+{
+    sort(v.begin(),v.end());
+    ll ans=0;
+    for(ll i=1;i<=n;i++) par[i]=i;
+    for(ll i=0;i<v.size();i++)
+    {
+        ll a=v[i].u;
+        ll b=v[i].v;
+        ll cost=v[i].w;
+        ll m1=findp(a);
+        ll m2=findp(b);
+        if(m1!=m2)
+        {
+            par[m1]=m2;
+            ans+=cost;
+        }
+    }
+    int cnt=0;
+    for(ll i=1;i<=n;i++)
+    {
+        ll x=findp(i);
+        if(x==i) cnt++;
+    }
+    if(cnt>1) cout<<"IMPOSSIBLE"<<endl;
+    else cout<<ans<<endl;
+}
+int main()
+{
+    while(cin>>n>>m and ( n or m)){
+    for(ll i=0;i<m;i++)
+    {
+        edge a;
+        cin>>a.u>>a.v>>a.w;
+        v.pb(a);
+    }
+    mst();
+    v.clear();
+    }
+}

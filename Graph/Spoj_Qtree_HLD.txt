@@ -1,0 +1,369 @@
+
+///HLD_SPOJ_QTREEE
+
+#include<bits/stdc++.h>
+typedef long long ll;
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+#define ordered_set tree<int, null_type,less_equal<int>, rb_tree_tag,tree_order_statistics_node_update>
+#define pb           push_back
+#define ff           first
+#define ss           second
+#define gcd(a, b)    __gcd(a, b)
+#define lcm(a, b)    ((a)*((b)/gcd(a,b)))
+#define all(v)       v.begin(),v.end()
+#define lllim        2147483648
+#define Pi           2*acos(0.0)
+#define mem(a,b)     memset(a, b, sizeof(a))
+#define fill_(a,b)   fill(a,a+n,b);
+#define MOD          1000000007
+#define fast_cin     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0)
+#define filein       freopen("input.txt","r", stdin)
+#define watch(x)   	 cerr << __LINE__ << ": " << #x << " = " << (x) << '\n'
+
+/*------------------------------Graph Moves----------------------------*/
+//const int fx[]= {+1,-1,+0,+0};
+//const int fy[]= {+0,+0,+1,-1};
+//const int fx[]= {+0,+0,+1,-1,-1,+1,-1,+1};  // Kings Move
+//const int fy[]= {-1,+1,+0,+0,+1,+1,-1,-1}; // Kings Move
+//const int fx[]={-2, -2, -1, -1,  1,  1,  2,  2};  // Knights Move
+//const int fy[]={-1,  1, -2,  2, -2,  2, -1,  1}; // Knights Move
+/*---------------------------------------------------------------------*/
+
+using namespace std;
+//using namespace __gnu_pbds;
+const int maxn=10005;
+
+int n, ptr,chainno;
+vector<int>adj[maxn],edge[maxn],cost[maxn];
+int level[maxn];
+int sparse[maxn][20];
+int subsize[maxn];
+int chainid[maxn];
+int chainhead[maxn];
+int base[maxn];
+int posbase[maxn];
+int tree[maxn*6];
+int lazy[maxn*6];
+
+void clean()
+{
+    for(int i=0; i<maxn; i++)
+    {
+        cost[i].clear();
+        edge[i].clear();
+        adj[i].clear();
+        chainid[i]=-1;
+        chainhead[i]=-1;
+        base[i]=0;
+        level[i]=-1;
+        posbase[i]=-1;
+        subsize[i]=0;
+    }
+
+    memset(sparse,-1,sizeof sparse);
+    memset(tree,0,sizeof tree);
+
+    ptr=1;
+    chainno=1;
+}
+
+void dfs(int u, int p, int depth)
+{
+    sparse[u][0]=p;
+    level[u]=depth;
+    subsize[u]=1;
+
+    for(int i=0; i<adj[u].size(); i++)
+    {
+        int v=adj[u][i];
+        if(v==p)
+            continue;
+        dfs(v,u,depth+1);
+        subsize[u]+=subsize[v];
+    }
+}
+
+void lca_init()
+{
+    for(int j = 1; (1 << j) <= n; j++)  /// maxim level can be n
+    {
+        for(int i = 1; i <= n; i++)
+        {
+            if(sparse[i][j - 1] != -1)
+                sparse[i][j] = sparse[sparse[i][j - 1]][j - 1];
+        }
+    }
+}
+
+int LCA(int u, int v)
+{
+    while (1)
+    {
+        int pu = chainhead[chainid[u]], pv = chainhead[chainid[v]];
+        if (pu == pv)
+            return level[u]<level[v] ? u : v;
+        else
+        {
+            if (level[pu] < level[pv])
+            {
+                v = sparse[pv][0];
+            }
+            else
+            {
+                u = sparse[pu][0];
+            }
+        }
+    }
+}
+
+void hld(int cur, int p, int cost_car)
+{
+    if(chainhead[chainno]==-1)
+    {
+        chainhead[chainno]=cur;
+    }
+    chainid[cur]=chainno;
+    posbase[cur]=ptr;
+    base[ptr++]=cost_car;
+
+    int sc=-1;
+    int mx=-1e9;
+
+    for(int i=0; i<adj[cur].size(); i++)
+    {
+        int v=adj[cur][i];
+        if(v==p)
+            continue;
+        if(sc==-1 or subsize[sc]<subsize[v])
+        {
+            sc=v;
+            mx=cost[cur][i];
+        }
+    }
+
+    if(sc!=-1)
+    {
+        hld(sc,cur,mx);
+    }
+
+    for(int i=0; i<adj[cur].size(); i++)
+    {
+        int v=adj[cur][i];
+        if(v==p or v==sc)
+            continue;
+        chainno++;
+        int cost_v=cost[cur][i];
+        hld(v,cur,cost_v);
+    }
+}
+
+void build(int node,int b, int e)
+{
+    if(b==e)
+    {
+        tree[node]=base[b];
+        //cout<<base[b]<<" "<<b<<"  "<<endl;;
+        lazy[node]=-1;
+        return;
+    }
+    int left=node*2;
+    int right=left+1;
+    int mid=(b+e)/2;
+    build(left,b,mid);
+    build(right,mid+1,e);
+
+    tree[node]=max(tree[left],tree[right]);
+    lazy[node]=-1;
+}
+
+inline void push_down(int node, int b, int e)
+{
+    tree[node]=(e-b+1)*lazy[node];
+    if(b!=e)
+    {
+        lazy[node*2]=lazy[node];
+        lazy[node*2+1]=lazy[node];
+
+    }
+    lazy[node]=-1;
+}
+
+int query_tree(int node, int b, int e, int i, int j)
+{
+    if(lazy[node]!=-1)
+    {
+        push_down(node, b, e);
+    }
+    if(i>e or j<b)
+        return -1;
+    if(i<=b && e<=j)
+        return tree[node];
+    int left=node*2;
+    int right=left+1;
+    int mid=(b+e)/2;
+    int r1=query_tree(left,b,mid,i,j);
+    int r2=query_tree(right,mid+1,e,i,j);
+    return max(r1,r2);
+}
+
+int query_up(int u, int v)
+{
+    ///v is smaller positioned than u in base;
+
+    int vchain=chainid[v];
+    int uchain;
+    int ret=0;
+    while(true)
+    {
+        if(u==v)
+            break;
+        uchain=chainid[u];
+        // cout<<uchain<< " chain "<<vchain<<endl;
+        if(uchain==vchain)
+        {
+
+            ret=max(ret,query_tree(1,1,ptr,posbase[v]+1,posbase[u]));
+            break;
+        }
+        ret=max(ret,query_tree(1,1,ptr,posbase[chainhead[uchain]],posbase[u]));
+        u=chainhead[uchain];
+        u=sparse[u][0];
+
+    }
+
+    //cout<<" find "<<ret<<endl;
+    return ret;
+}
+
+int query(int u, int v)
+{
+    int lca=LCA(u,v);
+
+    // cout<<lca<<"  lca "<<endl;
+    int ret1=query_up(u,lca);
+    int ret2=query_up(v,lca);
+    ///int ret3=query_up(lca,lca);
+    // cout<<lca<<" lca    -- "<<ret1<<" "<<ret2<<" "<<ret3<<endl;
+
+    return max(ret1,ret2);
+    ///return ret1+ret2-ret3;
+}
+
+void update_tree(int node, int b, int e, int i, int j, int c)
+{
+//    if(lazy[node]!=-1)
+//        push_down(node,b,e);
+
+    if(i>e or j<b)
+        return;
+    if(i<=b && e<=j)
+    {
+        tree[node]=c;
+        //lazy[node]=c;
+        //push_down(node, b, e);
+        return;
+    }
+    int left=node*2;
+    int right=left+1;
+    int mid=(b+e)/2;
+    update_tree(left,b,mid,i,j,c);
+    update_tree(right,mid+1,e,i,j,c);
+
+    tree[node]=max(tree[left],tree[right]);
+}
+
+void update_up(int u, int v, int c)
+{
+    int vchain=chainid[v];
+    int uchain;
+    while(true)
+    {
+        uchain=chainid[u];
+        if(uchain==vchain)
+        {
+            update_tree(1,1,ptr,posbase[v],posbase[u],c);
+            break;
+        }
+        update_tree(1,1,ptr,posbase[chainhead[uchain]],posbase[u],c);
+        u=chainhead[uchain];
+        u=sparse[u][0];
+
+    }
+}
+
+void update(int u, int v, int c)
+{
+    ///int lca=LCA(u,v);
+    ///update_up(v,lca,c);
+    ///update_up(u,lca,c);
+    ///update(lca,lca,-c);
+
+    update_tree(1,1,ptr,posbase[u],posbase[v],c);
+}
+
+int main()
+{
+    ///fast_cin;
+    // filein;
+    int t,cas=1;
+    scanf("%d",&t);
+    while(t--)
+    {
+        clean();
+        int n,q;
+        scanf("%d",&n);
+//        for(int i=0; i<n; i++)
+//            scanf("%d",&cost[i]);
+
+        for(int i=0; i<n-1; i++)
+        {
+            int p, q, c;
+            scanf("%d%d%d",&p,&q,&c);
+            adj[p].pb(q);
+            adj[q].pb(p);
+            cost[p].pb(c);
+            cost[q].pb(c);
+            edge[i].pb(p);
+            edge[i].pb(q);
+        }
+        dfs(1,-1,1);
+        lca_init();
+        hld(1,-1,cost[1][0]);
+        build(1,1,ptr);
+        // cout<<endl;
+
+        //scanf("%d",&q);
+        //printf("Case %d:\n",cas++);
+
+        while(1)
+        {
+            char s[10];
+            //cin>>s;
+            scanf("%s",s);
+            if(s[0]=='D')
+                break;
+            int type,u,c;
+            scanf("%d%d",&u,&c);
+            if(s[0]=='C')
+            {
+                int node;
+                if(level[edge[u-1][0]]>level[edge[u-1][1]])
+                    node=edge[u-1][0];
+                else
+                    node=edge[u-1][1];
+
+
+                update(node,node,c);
+            }
+            else if(s[0]=='Q')
+            {
+                int ans=query(u,c);
+                printf("%d\n",ans);
+            }
+        }
+    }
+
+
+    return 0;
+}

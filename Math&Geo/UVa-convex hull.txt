@@ -1,0 +1,107 @@
+
+///*****************************************************///
+///*...................................................*///
+///*.............MD MUSTAFIZUR RAHMAN ARMAN............*///
+///*.........................KUET......................*///
+///*...................................................*///
+///*****************************************************///
+
+#include<bits/stdc++.h>
+typedef long long ll;
+#define pb           push_back
+#define ff           first
+#define ss           second
+#define gcd(a, b)    __gcd(a, b)
+#define lcm(a, b)    ((a)*((b)/gcd(a,b)))
+#define all(v)       (v.begin(),v.end())
+#define intlim       2147483648
+#define Pi           2*acos(0.0)
+#define mem(a,b)     memset(a, b, sizeof(a))
+#define fill_(a,b)   fill(a,a+n,b);
+#define MOD          1000000007
+#define fast_cin     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0)
+#define filein       freopen("input.txt","r", stdin)
+#define watch(x)   	 cerr << __LINE__ << ": " << #x << " = " << (x) << '\n'
+
+
+using namespace std;
+
+const int maxn=100005;
+
+struct point
+{
+    ll x, y;
+
+    bool operator<(const point &p) const
+    {
+        return (x<p.x || (x==p.x && y<p.y) );
+    }
+};
+
+ll cross(point r, point p, point q)
+{
+    return (p.x-r.x)*(q.y-r.y)-(p.y-r.y)*(q.x-r.x);
+}
+
+
+vector<point> convex_hull(vector<point> ara)
+{
+    ll k=0;
+    ll n=ara.size();
+    vector<point>ans(2*n);
+
+    sort(ara.begin(), ara.end());
+
+    for(ll i=0;i<n;i++)
+    {
+        while(k>=2 && cross(ans[k-2], ans[k-1], ara[i])<0) k--;
+        ans[k++]=ara[i];
+    }
+
+    ll t=k+1;
+    for(ll i=n-2; i>=0;i--)
+    {
+        while(k>=t && cross(ans[k-2], ans[k-1], ara[i])<0) k--;
+        ans[k++]=ara[i];
+    }
+
+    ans.resize(k-1);
+
+    return ans;
+
+}
+
+int main()
+{
+   // filein;
+    ll t, cas=1;
+
+    scanf("%lld", &t);
+    while(t--)
+    {
+        ll n,i;
+        char c;
+        scanf("%lld", &n);
+        vector<point>ara;
+        for(ll i=0;i<n;i++)
+        {
+            point p;
+            cin>>p.x>>p.y>>c;
+           // cout<<p.x<<" "<<p.y<<" "<<c<<endl;
+            if(c=='Y')
+                ara.pb(p);
+        }
+        vector<point>ans=convex_hull(ara);
+
+        printf("%lld\n", (ll)ans.size());
+
+        for(ll i=0;i<ans.size();i++)
+        {
+            printf("%lld %lld\n", ans[i].x, ans[i].y);
+        }
+
+
+    }
+
+    return 0;
+}

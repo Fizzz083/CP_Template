@@ -1,0 +1,208 @@
+#include<bits/stdc++.h>
+#define ll long long
+using namespace std;
+
+const ll maxn = 100005;
+const ll inf = 100000000000;
+ll n, m, q;
+vector <pair <ll, pair <ll, ll> > > edgelist;
+vector <pair <ll, ll> > g[maxn];
+ll parent[maxn];
+ll sparse[maxn][18];
+ll minsparse[maxn][18];
+ll parentcost[maxn];
+ll level[maxn];
+
+ll findparent (ll a){
+    if (parent[a] == a) return a;
+    return parent[a] = findparent(parent[a]);
+}
+
+void makeset (ll a, ll b){
+    ll pa = findparent(a);
+    ll pb = findparent(b);
+    parent[pa] = pb;
+}
+
+void dfs (ll u, ll par,ll d){
+    level[u] = d;
+    for (ll i = 0; i < g[u].size(); i++){
+        ll k = g[u][i].first;
+        if (k != par){
+
+            parent[k] = u;
+            parentcost[k] = g[u][i].second;
+            dfs (k, u,d+1);
+        }
+    }
+}
+
+void build(){
+    for(int i = 1; i <= n; i++){
+        sparse[i][0] = parent[i];
+        minsparse[i][0] = parentcost[i];
+    }
+
+    for(int j = 1; (1 << j) <=n; j++){
+        for(int i = 1; i <=n; i++){
+            if(sparse[i][j-1] != -1){
+                minsparse[i][j] = max(minsparse[i][j-1],minsparse[sparse[i][j-1]][j-1]);
+                sparse[i][j] = sparse[sparse[i][j-1]][j-1];
+            }
+        }
+    }
+}
+
+ll  query(ll p, ll q){
+    if(level[p] < level[q]){
+        swap(p,q);
+    }
+
+    ll log = 1;
+    ll ans = 0;
+    while( (1 << log) <= level[p]) log++;log--;
+    for(ll i = log; i >=0 ; i--){
+        if(level[p] - (1LL << i) >= level[q]){
+            ans = max(minsparse[p][i],ans);
+            p = sparse[p][i];
+        }
+    }
+
+    if(p == q) return ans;
+
+    for(ll i = log; i >= 0; i--){
+        if(sparse[p][i] != -1 && (sparse[p][i] != sparse[q][i])){
+            ans = max(ans,minsparse[p][i]);
+            ans = max(ans,minsparse[q][i]);
+            p = sparse[p][i];
+            q = sparse[q][i];
+        }
+    }
+
+    return max(minsparse[p][0],max(minsparse[q][0],ans));
+
+}
+int main (){
+//    filein;
+freopen("input.txt", "r", stdin);
+    for(int i = 0; i < maxn; i++){
+        for(int j = 0; j < 18; j++){
+            minsparse[i][j] = -1;
+            sparse[i][j] = -1;
+        }
+    }
+
+    scanf("%lld %lld %lld", &n, &m, &q);
+    for (ll i = 0; i < m; i++){
+        ll u, v, c;
+        scanf("%lld %lld %lld", &u, &v, &c);
+        edgelist.push_back (make_pair (c, make_pair (u, v)));
+    }
+    sort (edgelist.begin(), edgelist.end());
+    for (ll i = 1; i <= maxn; i++)
+        parent[i] = i;
+    for (ll i = 0; i < edgelist.size(); i++){
+        ll c = edgelist[i].first;
+        ll u = edgelist[i].second.first;
+        ll v = edgelist[i].second.second;
+        ll pu = findparent(u);
+        ll pv = findparent(v);
+        if (pu != pv){
+            g[u].push_back (make_pair (v, c));
+            g[v].push_back (make_pair (u, c));
+           //cout << u << " " << v  << " " << c << endl;
+            makeset (pu, pv);
+        }
+    }
+
+    parent[1] = -1;
+    parentcost[1] = 0;
+    dfs (1, 0,1);
+    build();
+
+    while(q--){
+       ll a,b;
+       scanf("%lld %lld",&a,&b);
+
+       ll ans = query(a,b);
+
+       printf("%lld\n",ans);
+    }
+
+
+    return 0;
+}
+
+
+
+///////////////////////////
+..........................................
+//////////////////////////
+.........................................
+
+#include<bits/stdc++.h>
+using namespace std;
+
+const int maxn = 100005;
+
+
+int n;
+vector < int > ad[maxn];
+int level[maxn];
+int sparse[maxn][22];
+
+void dfs(int u, int p, int d){
+    level[u] = d;
+    sparse[u][0] = p;
+    for(int i = 0; i < adj[u].size(); i++){
+        int v = adj[u][i];
+        if(v == p) continue;
+        dfs(v, u, d + 1);
+    }
+}
+
+int parentk(int u, int k){
+
+}
+
+int lca_query(int p, int q){
+    if(level[p] < level[q]) swap(p, q);
+    int log = 1;
+
+    while((1<<log) <= level[p] ) log++;
+    log--;
+
+    for(int i = log; i >= 0; i--){
+        if(level[p] - (1<<i) >= level[q]){
+            p = sparse[p][i];
+        }
+    }
+
+    if(p == q) return p;
+
+    for(int i = log; i >= 0; i--){
+        if(sparse[p][i] != -1 and sparse[p][i] != sparse[q][i]){
+            p = sparse[p][i];
+            q = sparse[q][i];
+        }
+    }
+    return sparse[p][0];
+
+
+}
+
+int lca_init(){
+    for(int j = 1; 1 << j <= n; j++){ /// maxim level can be n
+        for(int i = 1; i <= n; i++){
+            if(sparse[i][j - 1] != -1)
+                sparse[i][j] = sparse[sparse[i][j - 1]][j - 1];
+        }
+    }
+}
+
+int main()
+{
+    memset(sparse, - 1, sizeof sparse);
+    dfs(1, - 1, 0);
+}
+

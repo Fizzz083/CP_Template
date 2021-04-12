@@ -1,0 +1,161 @@
+#include<bits/stdc++.h>
+#define ll               long long int
+#define pb               push_back
+#define mp               make_pair
+#define ff               first
+#define ss               second
+#define inf              1e9+7
+ 
+#define PRINT_CASE(z)    printf("Case %d: ",z)
+#define print_line       printf("\n")
+#define gcd(a, b)        __gcd(a, b)
+#define lcm(a, b)        ((a)*((b)/gcd(a,b)))
+#define watch(x)         cerr << __LINE__ << ": " << #x << " = " << (x) << endl
+#define MAX              10000007
+#define MOD              1e9+7
+ 
+using namespace std;
+ 
+const int maxn=16004;
+ 
+int pr[maxn];
+ 
+struct edge
+{
+    int u,v,w, vis;
+    bool operator<(const edge& p) const
+    {
+        return w<p.w;
+    }
+};
+ 
+int find_(int i)
+{
+    return (pr[i]==i) ? i: find_(pr[i]);
+}
+ 
+vector<edge>e;
+ 
+vector<pair<int,int>>adj[maxn];
+ 
+int cnt,n;
+void MST(int m)
+{
+ 
+    sort(e.begin(), e.end());
+ 
+    for(int i=0; i<(int)e.size(); i++)
+    {
+        int u=find_(e[i].u);
+        int v=find_(e[i].v);
+ 
+        if(u!=v)
+        {
+            e[i].vis=1;
+            pr[u]=v;
+            cnt++;
+            adj[u].pb({v, e[i].w});
+            adj[v].pb({u, e[i].w});
+            if(cnt==n)
+                break;
+        }
+    }
+ 
+}
+ 
+int dis[maxn];
+bool vis[maxn];
+ 
+void bfs(int s)
+{
+    memset(vis, false , sizeof vis);
+    memset(dis, -1, sizeof dis);
+    vis[s]=true;
+    queue<int>q;
+    q.push(s);
+    dis[s]=0;
+ 
+    int ans=0;
+    while(q.size())
+    {
+        //cout<<q.size()<<" dfgs "<<q.front()<<" dist= "<<dist[q.front()]<<" "<<qq<<endl;
+        int u=q.front();
+        q.pop();
+        for(auto x:adj[u])
+        {
+            //int v=adj[u][i];
+            if(vis[x.ff]==false)
+            {
+ 
+                vis[x.ff]=true;
+                dis[x.ff]=max(dis[u],x.ss );
+                q.push(x.ff);
+            }
+        }
+    }
+ 
+}
+ 
+ 
+ 
+ 
+ 
+ 
+int main()
+{
+  //  freopen("input.txt", "r", stdin);
+    // freopen("output.txt", "w", stdout);
+    int t, cas=1;
+ 
+    scanf("%d", &t);
+    while(t--)
+    {
+        e.clear();
+        int n, num=1,m;
+        scanf("%d%d", &n, &m);
+        cnt=0;
+ 
+        for(int i=0; i<=n; i++)
+            pr[i]=i;
+ 
+        for(int i=0; i<m; i++)
+        {
+            int a, b;
+            int c;
+            cin>>a>>b>>c;
+ 
+            int x=a;
+            int y=b;
+ 
+            edge new_;
+            new_.u=x;
+            new_.v=y;
+            new_.w=c;
+            new_.vis=0;
+            e.pb(new_);
+        }
+ 
+        MST(m);
+        int s;
+        scanf("%d",&s);
+ 
+        bfs(s);
+        printf("Case %d:\n", cas++);
+ 
+        for(int i=0;i<n;i++)
+        {
+            if(dis[i]!=-1)
+            printf("%d\n", dis[i]);
+            else
+            {
+                printf("Impossible\n");
+            }
+        }
+ 
+        for(int i=0;i<=n;i++) adj[i].clear();
+ 
+    }
+ 
+ 
+    return 0;
+}

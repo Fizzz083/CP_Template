@@ -1,0 +1,41 @@
+#include<bits/stdc++.h>
+#define ll               unsigned long long int
+#define pb               push_back
+#define mp               make_pair
+#define ff               first
+#define ss               second
+#define inf              1e9+7
+#define PRINT_CASE(z)    printf("Case %d: ",z)
+#define print_line       printf("\n")
+#define gcd(a, b)        __gcd(a, b)
+#define lcm(a, b)        ((a)*((b)/gcd(a,b)))
+#define watch(x)         cerr << __LINE__ << ": " << #x << " = " << (x) << endl
+#define MAX              10000007
+#define MOD              1e9+7
+
+using namespace std;
+
+const long long MAXN= 5000005;
+bool mark[MAXN];
+ll phi[MAXN];
+void sievephi()
+{
+    for(long long i=1;i<=MAXN;i++) phi[i]=i;
+
+    phi[1]=1;
+    mark[1]=1;
+    for(long long i=2;i<=MAXN;i++)
+    {
+        if(!mark[i])
+        {
+            for(ll j=i;j<=MAXN;j+=i)
+            {
+                mark[j]=1;
+                phi[j]=phi[j]/i*(i-1);
+
+            }
+
+        }
+
+    }
+}

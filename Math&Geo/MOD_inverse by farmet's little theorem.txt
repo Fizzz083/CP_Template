@@ -1,0 +1,89 @@
+
+
+/// this code is : lightoj 1067 : combinations
+
+
+
+///*****************************************************///
+///*...................................................*///
+///*.............MD MUSTAFIZUR RAHMAN ARMAN............*///
+///*.........................KUET......................*///
+///*...................................................*///
+///*****************************************************///
+
+#include<bits/stdc++.h>
+typedef long long ll;
+#define pb           push_back
+#define ff           first
+#define ss           second
+#define gcd(a, b)    __gcd(a, b)
+#define lcm(a, b)    ((a)*((b)/gcd(a,b)))
+#define D(x)   	     cerr << __LINE__ << ": " << #x << " = " << (x) << '\n'
+#define all(v)       (v.begin(),v.end())
+#define intlim       2147483648
+#define Pi           2*acos(0.0)
+#define mem(a,b)     memset(a, b, sizeof(a))
+#define fill_(a,b)   fill(a,a+n,b);
+#define MOD          1000003
+#define fast_cin     ios_base::sync_with_stdio(0); cin.tie(0); cout.tie(0)
+#define filein       freopen("input.txt","r",stdin)
+
+using namespace std;
+
+const ll mx=1000006;
+
+ll fact[mx];
+
+
+ll bigmod(ll a, ll b, ll m)
+{
+    if(b==0)
+        return 1;
+    ll x=bigmod(a,b/2,m);
+    x=(x*x)%m;
+    if(b%2)
+        x=(x*a)%m;
+    return x;
+}
+
+ll modinverse(ll a, ll m)
+{
+
+    return bigmod(a, m-2, m);
+
+}
+
+int main()
+{
+   // filein;
+    int t, cas=1;
+    scanf("%d", &t);
+    fact[0]=fact[1]=1LL;
+
+    for(ll i=2;i<mx;i++)
+    {
+        fact[i]=((fact[i-1]%MOD)*(i%MOD))%MOD;
+       // cout<<fact[i]<<endl;
+
+    }
+
+
+    while(t--)
+    {
+        ll n, r;
+        scanf("%lld%lld", &n, &r);
+
+        ll ans=((modinverse(fact[r], MOD))*(modinverse(fact[n-r], MOD)))%MOD;
+
+      //  cout<<ans<<" "<<modinverse(fact[r], MOD)<<endl;
+
+        ans=((fact[n]%MOD)*(ans%MOD))%MOD;
+
+        printf("Case %d: %lld\n", cas++, ans);
+
+
+    }
+
+    return 0;
+}
+

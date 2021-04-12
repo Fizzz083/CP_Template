@@ -1,0 +1,142 @@
+#include<bits/stdc++.h>
+#define pb push_back
+#define ll long long
+using namespace std;
+#define M 200015
+
+
+struct prefix
+{
+    bool endmark;
+    int cnt_trees;
+    prefix *next[4];
+
+    prefix()
+    {
+        cnt_trees=0;
+        endmark=false;
+
+        for(int i=0; i<4; i++)
+        {
+            next[i]=NULL;
+
+        }
+    }
+}*root;
+
+int idx(char c)
+{
+
+    if(c=='A')
+        return 0;
+    else if(c=='C')
+        return 1;
+    else if(c=='G')
+        return 2;
+    else
+        return 3;
+
+}
+
+
+void insert_into_trie(string str)
+{
+    prefix *current=root;
+
+    for(int i=0; i<str.size(); i++)
+    {
+         int id=idx(str[i]);
+      //  cout<<id<<endl;
+
+        if(current->next[id]==NULL)
+        {
+            current->next[id]=new prefix;
+        }
+        current=current->next[id];
+        current->cnt_trees++;
+    }
+}
+
+int search_into_trie(string str)
+
+{
+    prefix *current;
+
+    current=root;
+
+    int mx=-1;
+
+    for(int i=0; i<(int)str.size(); i++)
+    {
+        int id=idx(str[i]);
+
+        current=current->next[id];
+
+        int ache=current->cnt_trees;
+        int len=i+1;
+
+        int now_=ache*len;
+
+        mx=max(now_,mx);
+    }
+
+    return mx;
+}
+
+
+void del(prefix* cur)
+{
+
+    for(int i=0; i<4; i++)
+    {
+        if(cur->next[i])
+            del(cur->next[i]);
+
+    }
+
+    delete(cur);
+}
+
+
+
+int main()
+{
+
+   // freopen("input.txt", "r", stdin);
+
+    int t,cas=1;
+    scanf("%d",& t);
+    while(t--)
+    {
+        int n;
+        scanf("%d", &n);
+        
+        root=new prefix;
+
+        vector<string>v;
+        string str;
+        
+        for(int i=0; i<n; i++)
+        {
+            cin>>str;
+            insert_into_trie(str);
+            v.pb(str);
+
+        }
+        int ans=0;
+        for(int i=0; i<n; i++)
+        {
+            int new_ans=search_into_trie(v[i]);
+
+            ans=max(ans, new_ans);
+
+        }
+        printf("Case %d: %d\n", cas++,ans);
+        del(root);
+
+    }
+
+
+
+    return 0;
+}
